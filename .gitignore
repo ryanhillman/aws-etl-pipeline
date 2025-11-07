@@ -48,3 +48,16 @@ raw_data.csv
 
 # --- Ignore VSCode launch settings ---
 .vscode/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+crash.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
