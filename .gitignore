@@ -1,7 +1,8 @@
 # --- Terraform ---
 .terraform/
-terraform.tfstate
-terraform.tfstate.backup
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
 *.tfvars
 *.tfvars.json
 crash.log
@@ -10,11 +11,9 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 
-# --- Python build/deps ---
+# --- Python build / dependencies ---
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
 *.egg-info/
 build/
 dist/
@@ -24,12 +23,13 @@ venv/
 pip-wheel-metadata/
 *.zip
 
-# --- Lambda layers or site-packages ---
+# --- AWS Lambda / packaging ---
 python/
 unzipped_lambda/
 verify_zip/
+lambda_function.zip
 
-# --- OS/IDE junk ---
+# --- OS / IDE junk ---
 .DS_Store
 Thumbs.db
 *.log
@@ -37,7 +37,7 @@ Thumbs.db
 .vscode/
 .idea/
 
-# --- AWS ---
+# --- AWS credentials ---
 .aws/
 *.pem
 *.key
@@ -46,18 +46,5 @@ Thumbs.db
 raw_data.csv
 *.csv
 
-# --- Ignore VSCode launch settings ---
-.vscode/
-
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.backup
-.terraform.lock.hcl
-crash.log
-*.tfvars
-*.tfvars.json
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
+# --- Other ---
+*.bak
