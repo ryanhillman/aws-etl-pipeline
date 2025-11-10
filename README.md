@@ -160,10 +160,3 @@ Name,Age,City
 Ryan,30,Charlotte
 Palmer,9,Davidson
 ```
-
----
-
-**Author:** Ryan Hillman  
-**Certifications:** AWS Cloud Practitioner, Microsoft Azure Fundamentals  
-**GitHub:** [@ryanhillman](https://github.com/ryanhillman)  
-**LinkedIn:** [Ryan Hillman](https://www.linkedin.com/in/ryanhillman)
