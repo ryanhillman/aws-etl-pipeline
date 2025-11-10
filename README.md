@@ -21,8 +21,8 @@ AWS Glue then catalogs both the raw and cleaned datasets, allowing **AWS Athena*
                    │  (CSV upload event)
                    ▼
          ┌─────────────────────┐
-         │  AWS Lambda (ETL)  │
-         │  etl-transform-lambda │
+         │  AWS Lambda (ETL)   │
+         │ etl-transform-lambda│
          └─────────┬───────────┘
                    │  (pandas transform)
                    ▼
@@ -110,28 +110,6 @@ LIMIT 10;
 | Infrastructure as Code | Terraform |
 | Logging & Monitoring | AWS CloudWatch |
 | Data Query | SQL via Athena |
-
----
-
-## 📂 Repository Structure
-
-```
-aws-etl-pipeline/
-│
-├── lambda/
-│   └── lambda_function.py          # Lambda ETL logic (pandas transform)
-│
-├── sample_data/
-│   └── raw_data.csv                # Example input CSV
-│
-├── terraform/
-│   ├── main.tf                     # Infrastructure: S3, Lambda, IAM roles, triggers
-│   └── variables.tf
-│
-├── glue-access-policy.json         # Glue & S3 permissions
-├── glue-trust-policy.json          # IAM trust policy for Glue role
-└── README.md
-```
 
 ---
 
