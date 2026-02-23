@@ -1,3 +1,6 @@
+![AWS](https://img.shields.io/badge/AWS-Cloud%20Project-FF9900?logo=amazon-aws&logoColor=white)
+![ETL](https://img.shields.io/badge/Data-ETL%20Pipeline-blue)
+
 # 🧩 AWS Serverless ETL Pipeline (Lambda + Glue + Athena)
 
 This project demonstrates a fully automated **serverless data pipeline** built on AWS — capable of ingesting, transforming, cataloging, and querying structured data without managing any servers.
