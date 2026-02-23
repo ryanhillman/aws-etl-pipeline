@@ -1,7 +1,8 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Cloud-AWS-FF9900?logo=amazon-aws&logoColor=white" />
+  <img src="https://img.shields.io/badge/AWS-S3-FF9900?logo=amazon-aws&logoColor=white" />
+  <img src="https://img.shields.io/badge/AWS-Lambda-FF9900?logo=amazon-aws&logoColor=white" />
+  <img src="https://img.shields.io/badge/AWS-Glue-FF9900?logo=amazon-aws&logoColor=white" />
   <img src="https://img.shields.io/badge/Architecture-ETL%20Pipeline-black" />
-  <img src="https://img.shields.io/badge/Domain-Data%20Engineering-1f77b4" />
 </p>
 
 # AWS Serverless ETL Pipeline (Lambda + Glue + Athena)
