@@ -1,9 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Cloud-AWS-FF9900?logo=amazon-aws&logoColor=white" />
   <img src="https://img.shields.io/badge/Architecture-Serverless%20ETL-black" />
-  <img src="https://img.shields.io/badge/Compute-AWS%20Lambda-FF9900?logo=aws-lambda&logoColor=white" />
-  <img src="https://img.shields.io/badge/Catalog-AWS%20Glue-FF9900?logo=amazon-aws&logoColor=white" />
-  <img src="https://img.shields.io/badge/Query-AWS%20Athena-FF9900?logo=amazon-aws&logoColor=white" />
   <img src="https://img.shields.io/badge/IaC-Terraform-844FBA?logo=terraform&logoColor=white" />
 </p>
 
