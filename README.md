@@ -1,20 +1,20 @@
 ![AWS](https://img.shields.io/badge/AWS-Cloud%20Project-FF9900?logo=amazon-aws&logoColor=white)
 ![ETL](https://img.shields.io/badge/Data-ETL%20Pipeline-blue)
 
-# 🧩 AWS Serverless ETL Pipeline (Lambda + Glue + Athena)
+# AWS Serverless ETL Pipeline (Lambda + Glue + Athena)
 
 This project demonstrates a fully automated **serverless data pipeline** built on AWS — capable of ingesting, transforming, cataloging, and querying structured data without managing any servers.
 
 ---
 
-## 📘 Overview
+## Overview
 Whenever a new CSV file is uploaded to an S3 bucket, an AWS Lambda function is automatically triggered.  
 The function uses **pandas** to clean and transform the dataset (for example, incrementing values or fixing formatting) before saving the processed data to a separate S3 bucket.  
 AWS Glue then catalogs both the raw and cleaned datasets, allowing **AWS Athena** to query them directly with SQL.
 
 ---
 
-## 🧱 Architecture Diagram
+## Architecture Diagram
 
 ```text
          ┌─────────────────────┐
@@ -49,7 +49,7 @@ AWS Glue then catalogs both the raw and cleaned datasets, allowing **AWS Athena*
 
 ---
 
-## ⚙️ Architecture Components
+## Architecture Components
 
 | Layer | AWS Service | Description |
 |-------|--------------|-------------|
@@ -62,7 +62,7 @@ AWS Glue then catalogs both the raw and cleaned datasets, allowing **AWS Athena*
 
 ---
 
-## 📊 Example Data Flow
+## Example Data Flow
 
 ### Raw Input (in S3)
 ```csv
@@ -93,7 +93,7 @@ LIMIT 10;
 
 ---
 
-## 🧠 Key Learnings
+## Key Learnings
 
 - Implemented a **fully serverless ETL workflow** integrating AWS Lambda, S3, Glue, and Athena.
 - Used **pandas** within AWS Lambda via the official `AWSSDKPandas` layer for efficient data transformations.
@@ -104,7 +104,7 @@ LIMIT 10;
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Category | Technology |
 |-----------|-------------|
@@ -116,7 +116,7 @@ LIMIT 10;
 
 ---
 
-## 🚀 How It Works (Step-by-Step)
+## How It Works (Step-by-Step)
 
 1. **Upload**  
    Place any CSV file into the raw bucket:  
@@ -138,7 +138,7 @@ LIMIT 10;
 
 ---
 
-## 📦 Example CLI Validation
+## Example CLI Validation
 
 **Trigger the pipeline:**
 ```powershell
