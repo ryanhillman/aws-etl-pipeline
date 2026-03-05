@@ -1,10 +1,10 @@
+# AWS Serverless ETL Pipeline
+
 <p align="center">
   <img src="https://img.shields.io/badge/Cloud-AWS-FF9900?logo=amazon-aws&logoColor=white" />
   <img src="https://img.shields.io/badge/Architecture-Serverless%20ETL-black" />
   <img src="https://img.shields.io/badge/IaC-Terraform-844FBA?logo=terraform&logoColor=white" />
 </p>
-
-# AWS Serverless ETL Pipeline (Lambda + Glue + Athena)
 
 This project demonstrates a fully automated **serverless data pipeline** built on AWS — capable of ingesting, transforming, cataloging, and querying structured data without managing any servers.
 
