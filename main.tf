@@ -31,17 +31,14 @@ resource "aws_iam_role_policy" "lambda_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject"
-        ]
-        Resource = [
-          "${aws_s3_bucket.raw.arn}",
-          "${aws_s3_bucket.raw.arn}/*",
-          "${aws_s3_bucket.cleaned.arn}",
-          "${aws_s3_bucket.cleaned.arn}/*"
-        ]
+        Effect   = "Allow"
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.raw.arn}/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.cleaned.arn}/cleaned/*"
       },
       {
         Effect = "Allow"
