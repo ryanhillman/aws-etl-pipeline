@@ -67,12 +67,6 @@ resource "aws_lambda_function" "etl_lambda" {
 
   layers = ["arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python311:6"]
 
-  environment {
-    variables = {
-      LOG_LEVEL = "INFO"
-    }
-  }
-
   timeout = 60
 }
 

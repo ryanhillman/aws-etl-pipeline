@@ -13,7 +13,7 @@ This project demonstrates a **serverless ETL pipeline** capable of ingesting, tr
 ## Overview
 When a new CSV file is uploaded to an S3 bucket, an AWS Lambda function is automatically triggered.
 
-The function uses pandas to clean and transform the dataset before saving the processed data to a separate S3 bucket.
+The function uses pandas to transform the dataset before saving the processed data to a separate S3 bucket.
 
 AWS Glue then catalogs the raw and cleaned datasets, allowing SQL querying with AWS Athena.
 
@@ -76,7 +76,7 @@ Compress-Archive -Path lambda/lambda_function.py -DestinationPath lambda/lambda_
 terraform init
 terraform apply
 ```
-Terraform creates both S3 buckets, the IAM role, the pandas Lambda layer, the Lambda function (with `SOURCE_BUCKET` and `CLEANED_BUCKET` env vars wired automatically), and the S3 event trigger.
+Terraform creates both S3 buckets, the IAM role, the Lambda function (using the AWS-managed AWS SDK for pandas layer), and the S3 event trigger. The Glue crawlers, Data Catalog and Athena queries were configured in the AWS console.
 
 **3. Test the pipeline**
 ```powershell
@@ -89,7 +89,7 @@ aws s3 cp s3://cleaned-data-ryan/cleaned/raw_data.csv -
 
 **Expected:**
 ```csv
-Name,Age,City
-Ryan,30,Charlotte
-Palmer,9,Davidson
+Name,Age,City 
+Ryan,30,Charlotte 
+Palmer,9,Davidson 
 ```
