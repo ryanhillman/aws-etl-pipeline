@@ -21,9 +21,7 @@ Terraform was used to provision resources and AWS CloudWatch verified the transf
 
 ---
 
-## Demo
-
-https://youtu.be/CyTrPDVRbM4
+## [Demo](https://youtu.be/CyTrPDVRbM4)
 
 ---
 
@@ -92,4 +90,9 @@ aws s3 cp s3://cleaned-data-ryan/cleaned/raw_data.csv -
 Name,Age,City 
 Ryan,30,Charlotte 
 Palmer,9,Davidson 
+```
+
+**4. Tear down**
+```powershell
+terraform destroy
 ```
