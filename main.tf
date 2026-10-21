@@ -56,13 +56,6 @@ resource "aws_iam_role_policy" "lambda_policy" {
   })
 }
 
-# Lambda Layer for pandas
-resource "aws_lambda_layer_version" "pandas_layer" {
-  filename   = "layer/pandas-layer.zip"
-  layer_name = "pandas-layer"
-  compatible_runtimes = ["python3.11"]
-}
-
 resource "aws_lambda_function" "etl_lambda" {
   function_name = "etl-transform-lambda"
   runtime       = "python3.11"

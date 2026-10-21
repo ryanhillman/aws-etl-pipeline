@@ -17,7 +17,7 @@ The function uses pandas to clean and transform the dataset before saving the pr
 
 AWS Glue then catalogs the raw and cleaned datasets, allowing SQL querying with AWS Athena.
 
-Terraform was used to provision all resources and AWS CloudWatch verified the transformation logic.
+Terraform was used to provision resources and AWS CloudWatch verified the transformation logic.
 
 ---
 

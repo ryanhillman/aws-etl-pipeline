@@ -28,6 +28,8 @@ python/
 unzipped_lambda/
 verify_zip/
 lambda_function.zip
+layer/
+pandas-layer-final.zip
 
 # --- OS / IDE junk ---
 .DS_Store
@@ -48,3 +50,6 @@ raw_data.csv
 
 # --- Other ---
 *.bak
+
+!lambda/lambda_function.zip
+!sample_data/raw_data.csv
