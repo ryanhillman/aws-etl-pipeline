@@ -64,6 +64,12 @@ resource "aws_lambda_function" "etl_lambda" {
 
   layers = ["arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python311:6"]
 
+  environment {
+    variables = {
+      CLEANED_BUCKET = aws_s3_bucket.cleaned.bucket
+    }
+  }
+
   timeout = 60
 }
 
