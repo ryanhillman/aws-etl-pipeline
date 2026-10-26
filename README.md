@@ -96,3 +96,13 @@ Palmer,9,Davidson
 ```powershell
 terraform destroy
 ```
+
+---
+
+## Testing
+
+```powershell
+pip install -r requirements-dev.txt
+pytest
+```
+Tests use a mocked S3 ([moto](https://github.com/getmoto/moto)), so no AWS account is needed. CI runs lint, tests and Terraform checks on every push and PR.

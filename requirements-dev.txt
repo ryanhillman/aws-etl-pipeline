@@ -1,0 +1,7 @@
+# Local test/lint dependencies. The Lambda runtime gets pandas from the
+# AWS SDK for pandas layer and boto3 from the Python 3.11 runtime.
+boto3==1.40.61
+pandas==2.2.3
+moto[s3]==5.0.28
+pytest==8.3.2
+ruff==0.15.2
