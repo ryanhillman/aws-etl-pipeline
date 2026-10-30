@@ -23,8 +23,10 @@ def run(objects, *encoded_keys):
             for key in encoded_keys
         ]
     }
-    with mock.patch.object(lambda_function, "s3_client", s3), \
-         mock.patch.object(lambda_function.wr.s3, "to_parquet") as to_parquet:
+    with (
+        mock.patch.object(lambda_function, "s3_client", s3),
+        mock.patch.object(lambda_function.wr.s3, "to_parquet") as to_parquet,
+    ):
         lambda_function.lambda_handler(event, None)
     return [call.kwargs for call in to_parquet.call_args_list]
 
@@ -36,7 +38,9 @@ def test_reads_bucket_from_event_and_decodes_key():
     write = writes[0]
     assert write["df"].to_dict("records") == [{"Name": "Ryan", "Age": 30}]
     assert (write["path"], write["database"], write["table"]) == (
-        "s3://test-cleaned/cleaned/", "test_db", "cleaned"
+        "s3://test-cleaned/cleaned/",
+        "test_db",
+        "cleaned",
     )
     assert (write["dataset"], write["mode"]) == (True, "append")
 

@@ -1,5 +1,6 @@
-# Test dependencies. In AWS, pandas and awswrangler come from the Lambda layer and boto3 from the runtime.
+# Test and lint dependencies. In AWS, pandas and awswrangler come from the Lambda layer and boto3 from the runtime.
 awswrangler==3.18.0
 boto3==1.40.61
 pandas==2.2.3
 pytest==8.3.2
+ruff==0.15.2

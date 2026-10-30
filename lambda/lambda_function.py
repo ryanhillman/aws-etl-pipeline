@@ -13,6 +13,7 @@ GLUE_DATABASE = os.environ["GLUE_DATABASE"]
 # Created once per container and reused across invocations
 s3_client = boto3.client("s3")
 
+
 def parse_csv(body):
     """Parse CSV bytes with every column as text; transform() types Age."""
     if not body.strip():
@@ -22,10 +23,13 @@ def parse_csv(body):
     # field in the first row as a row index, which shifts every column.
     return pd.read_csv(io.BytesIO(body), dtype="string", index_col=False)
 
+
 def transform(df):
     """Trim whitespace and increment Age by 1, leaving blank or invalid ages blank."""
     # Whitespace-only cells become blank, like empty ones
-    df = df.rename(columns=str.strip).apply(lambda col: col.str.strip().replace("", pd.NA))
+    df = df.rename(columns=str.strip).apply(
+        lambda col: col.str.strip().replace("", pd.NA)
+    )
 
     if "Age" in df.columns:
         age = pd.to_numeric(df["Age"], errors="coerce")
@@ -33,6 +37,7 @@ def transform(df):
     else:
         print("⚠️ 'Age' column not found in dataset!")
     return df
+
 
 def process_file(bucket, key):
     # --- Read CSV from the source bucket ---
@@ -56,10 +61,11 @@ def process_file(bucket, key):
         dataset=True,
         mode="append",
         database=GLUE_DATABASE,
-        table="cleaned"
+        table="cleaned",
     )
 
     print(f"✅ Successfully processed and uploaded: {key}")
+
 
 def lambda_handler(event, context):
     print("✅ Lambda triggered successfully.")
@@ -68,5 +74,5 @@ def lambda_handler(event, context):
         # Object keys arrive URL-encoded (e.g. spaces as "+")
         process_file(
             record["s3"]["bucket"]["name"],
-            urllib.parse.unquote_plus(record["s3"]["object"]["key"])
+            urllib.parse.unquote_plus(record["s3"]["object"]["key"]),
         )

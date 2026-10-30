@@ -31,7 +31,9 @@ def test_increments_age():
 
 @pytest.mark.parametrize("bad_age", ["", "abc", "29.5"])
 def test_blank_or_invalid_age_becomes_blank(bad_age):
-    result = transform(read(f"Name,Age,City\nRyan,29,Charlotte\nPalmer,{bad_age},Davidson\n"))
+    result = transform(
+        read(f"Name,Age,City\nRyan,29,Charlotte\nPalmer,{bad_age},Davidson\n")
+    )
 
     assert result["Age"].iloc[0] == 30
     assert pd.isna(result["Age"].iloc[1])
