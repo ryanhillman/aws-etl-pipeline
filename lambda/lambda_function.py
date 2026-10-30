@@ -13,12 +13,15 @@ GLUE_DATABASE = os.environ["GLUE_DATABASE"]
 # Created once per container and reused across invocations
 s3_client = boto3.client("s3")
 
+def parse_csv(body):
+    """Parse CSV bytes with every column as text; transform() types Age."""
+    # pandas reads an all-blank column as numbers, which would fix that column's
+    # type for the whole table
+    return pd.read_csv(io.BytesIO(body), dtype="string")
+
 def transform(df):
     """Trim whitespace and increment Age by 1, leaving blank or invalid ages blank."""
-    df = df.copy()
-    df.columns = df.columns.str.strip()
-    for col in df.select_dtypes(include="object").columns:
-        df[col] = df[col].str.strip()
+    df = df.rename(columns=str.strip).apply(lambda col: col.str.strip())
 
     if "Age" in df.columns:
         age = pd.to_numeric(df["Age"], errors="coerce")
@@ -35,7 +38,7 @@ def process_file(bucket, key):
         print(f"⚠️ Skipping empty file: {key}")
         return
 
-    df = pd.read_csv(io.BytesIO(body))
+    df = parse_csv(body)
 
     print("Original data:")
     print(df)

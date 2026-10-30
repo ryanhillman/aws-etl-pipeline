@@ -1,13 +1,11 @@
-import io
-
 import pandas as pd
 import pytest
 
-from lambda_function import transform
+from lambda_function import parse_csv, transform
 
 
 def read(csv):
-    return pd.read_csv(io.StringIO(csv))
+    return parse_csv(csv.encode())
 
 
 def test_increments_age():
