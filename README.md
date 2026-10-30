@@ -69,7 +69,7 @@ Terraform was used to provision resources and AWS CloudWatch verified the transf
 terraform init
 terraform apply
 ```
-Terraform packages the Lambda code and creates the S3 buckets, the Lambda function (using the AWS-managed AWS SDK for pandas layer) and its S3 trigger, the Glue database and raw-data crawler, a log group with 14-day retention, and an SQS queue that captures failed events. Athena queries were configured in the AWS console.
+Terraform packages the Lambda code and creates the S3 buckets, the Lambda function (using the AWS-managed AWS SDK for pandas layer) and its S3 trigger, the Glue database and raw-data crawler, an Athena workgroup, a log group with 14-day retention, and an SQS queue that captures failed events.
 
 **2. Test the pipeline**
 ```sh
@@ -87,9 +87,12 @@ Ryan,30,Charlotte
 Palmer,9,Davidson
 ```
 
-To catalog the raw data for Athena, run the crawler:
+To catalog the raw data, run the crawler, then query it in Athena with the `etl-pipeline` workgroup:
 ```sh
 aws glue start-crawler --name $(terraform output -raw raw_crawler)
+```
+```sql
+SELECT * FROM etl_pipeline.raw;
 ```
 
 **3. Tear down**

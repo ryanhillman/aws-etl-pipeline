@@ -216,6 +216,20 @@ resource "aws_glue_crawler" "raw" {
   }
 }
 
+# Query results go to a fixed location instead of a per-user console setting
+resource "aws_athena_workgroup" "etl" {
+  name          = var.project
+  force_destroy = true
+
+  configuration {
+    enforce_workgroup_configuration = true
+
+    result_configuration {
+      output_location = "s3://${aws_s3_bucket.cleaned.bucket}/athena-results/"
+    }
+  }
+}
+
 output "raw_bucket" {
   value = aws_s3_bucket.raw.bucket
 }
