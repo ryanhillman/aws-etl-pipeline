@@ -1,6 +1,7 @@
 import io
 
 import pandas as pd
+import pytest
 
 from lambda_function import transform
 
@@ -16,8 +17,9 @@ def test_increments_age():
     assert result["Name"].tolist() == ["Ryan", "Palmer"]
 
 
-def test_blank_age_stays_blank():
-    result = transform(read("Name,Age,City\nRyan,29,Charlotte\nPalmer,,Davidson\n"))
+@pytest.mark.parametrize("bad_age", ["", "abc", "29.5"])
+def test_blank_or_invalid_age_becomes_blank(bad_age):
+    result = transform(read(f"Name,Age,City\nRyan,29,Charlotte\nPalmer,{bad_age},Davidson\n"))
 
     assert result["Age"].iloc[0] == 30
     assert pd.isna(result["Age"].iloc[1])

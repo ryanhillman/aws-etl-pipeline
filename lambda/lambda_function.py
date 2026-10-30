@@ -10,14 +10,15 @@ CLEANED_BUCKET = "cleaned-data-ryan"
 s3_client = boto3.client("s3")
 
 def transform(df):
-    """Trim whitespace and increment Age by 1, leaving blank ages blank."""
+    """Trim whitespace and increment Age by 1, leaving blank or invalid ages blank."""
     df = df.copy()
     df.columns = df.columns.str.strip()
     for col in df.select_dtypes(include="object").columns:
         df[col] = df[col].str.strip()
 
     if "Age" in df.columns:
-        df["Age"] = df["Age"].astype("Int64") + 1
+        age = pd.to_numeric(df["Age"], errors="coerce")
+        df["Age"] = age.where(age % 1 == 0).astype("Int64") + 1
     else:
         print("⚠️ 'Age' column not found in dataset!")
     return df
