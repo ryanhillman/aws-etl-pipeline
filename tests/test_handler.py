@@ -35,7 +35,7 @@ def run(objects, *encoded_keys):
 def test_reads_bucket_from_event_and_decodes_key():
     uploads = run({"my data.csv": b"Name,Age\nRyan,29\n"}, "my+data.csv")
 
-    assert uploads["cleaned/my data.csv"].splitlines() == ["Name,Age", "Ryan,30"]
+    assert uploads["cleaned/my data.csv"].splitlines() == ["name,age", "Ryan,30"]
 
 
 def test_processes_every_record():
@@ -44,7 +44,8 @@ def test_processes_every_record():
     assert set(uploads) == {"cleaned/a.csv", "cleaned/b.csv"}
 
 
-def test_skips_empty_files():
-    uploads = run({"empty.csv": b"", "blank.csv": b"\n\n"}, "empty.csv", "blank.csv")
+def test_skips_files_without_data_rows():
+    files = {"empty.csv": b"", "blank.csv": b"\n\n", "header.csv": b"Name,Age\n"}
+    uploads = run(files, *files)
 
     assert uploads == {}
