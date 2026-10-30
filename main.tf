@@ -250,7 +250,6 @@ output "raw_bucket" {
   value = aws_s3_bucket.raw.bucket
 }
 
-
 output "raw_crawler" {
   value = aws_glue_crawler.raw.name
 }
