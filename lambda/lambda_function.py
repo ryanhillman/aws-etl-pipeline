@@ -43,8 +43,8 @@ def process_file(bucket, key):
         print(f"⚠️ Skipping empty file: {key}")
         return
 
-    print("Original data:")
-    print(df)
+    # Log the shape, not the rows, so file contents don't end up in CloudWatch
+    print(f"Read {len(df)} rows with columns {list(df.columns)}")
 
     # --- Simple transformation: increment age by 1 ---
     df = transform(df)
