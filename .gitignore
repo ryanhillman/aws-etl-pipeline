@@ -47,5 +47,4 @@ Thumbs.db
 # --- Other ---
 *.bak
 
-!lambda/lambda_function.zip
 !sample_data/raw_data.csv

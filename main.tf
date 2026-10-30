@@ -58,14 +58,21 @@ resource "aws_iam_role_policy" "lambda_policy" {
   })
 }
 
+data "archive_file" "lambda_zip" {
+  type             = "zip"
+  source_file      = "${path.module}/lambda/lambda_function.py"
+  output_path      = "${path.module}/build/lambda_function.zip"
+  output_file_mode = "0666" # consistent file permissions across operating systems
+}
+
 resource "aws_lambda_function" "etl_lambda" {
   function_name = "etl-transform-lambda"
   runtime       = "python3.11"
   handler       = "lambda_function.lambda_handler"
   role          = aws_iam_role.lambda_role.arn
 
-  filename         = "lambda/lambda_function.zip"
-  source_code_hash = filebase64sha256("lambda/lambda_function.zip")
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
   layers = ["arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python311:6"]
 
