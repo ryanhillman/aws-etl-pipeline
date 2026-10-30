@@ -8,6 +8,12 @@ def read(csv):
     return parse_csv(csv.encode())
 
 
+def test_reads_every_column_as_text():
+    df = read("Name,Age,City\nRyan,29,\n")
+
+    assert df.dtypes.astype(str).tolist() == ["string", "string", "string"]
+
+
 def test_increments_age():
     result = transform(read("Name,Age,City\nRyan,29,Charlotte\nPalmer,8,Davidson\n"))
 
