@@ -1,7 +1,13 @@
-import json
+import io
+import urllib.parse
+
 import boto3
 import pandas as pd
-import io
+
+CLEANED_BUCKET = "cleaned-data-ryan"
+
+# Created once per container and reused across invocations
+s3_client = boto3.client("s3")
 
 def transform(df):
     """Trim whitespace and increment Age by 1, leaving blank ages blank."""
@@ -16,39 +22,37 @@ def transform(df):
         print("⚠️ 'Age' column not found in dataset!")
     return df
 
-def lambda_handler(event, context):
-    print("✅ Lambda triggered successfully.")
-
-    # Initialize S3 client
-    s3_client = boto3.client("s3")
-
-    # Buckets
-    source_bucket = "raw-data-ryan"
-    cleaned_bucket = "cleaned-data-ryan"
-
-    # Extract uploaded file name from the S3 event
-    key = event["Records"][0]["s3"]["object"]["key"]
-
+def process_file(bucket, key):
     # --- Read CSV from the source bucket ---
-    response = s3_client.get_object(Bucket=source_bucket, Key=key)
-    df = pd.read_csv(io.BytesIO(response["Body"].read()))
+    body = s3_client.get_object(Bucket=bucket, Key=key)["Body"].read()
 
-    print("Original data:")
-    print(df)
+    if not body.strip():
+        print(f"⚠️ Skipping empty file: {key}")
+        return
 
-    # --- Simple transformation: increment age by 1 ---
+    df = pd.read_csv(io.BytesIO(body))
+
+    # Log the shape, not the rows, so file contents don't end up in CloudWatch
+    print(f"Read {len(df)} rows with columns {list(df.columns)}")
+
+    # --- Transform: increment age by 1 ---
     df = transform(df)
-
-    # --- Write entire DataFrame to memory as CSV ---
-    csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
 
     # --- Upload to cleaned S3 bucket ---
     s3_client.put_object(
-        Bucket=cleaned_bucket,
+        Bucket=CLEANED_BUCKET,
         Key=f"cleaned/{key}",
-        Body=csv_buffer.getvalue()
+        Body=df.to_csv(index=False)
     )
 
     print(f"✅ Successfully processed and uploaded: {key}")
-    return {"statusCode": 200, "body": json.dumps("Processing complete.")}
+
+def lambda_handler(event, context):
+    print("✅ Lambda triggered successfully.")
+
+    for record in event["Records"]:
+        # Object keys arrive URL-encoded (e.g. spaces as "+")
+        process_file(
+            record["s3"]["bucket"]["name"],
+            urllib.parse.unquote_plus(record["s3"]["object"]["key"])
+        )
