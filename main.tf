@@ -83,14 +83,14 @@ data "archive_file" "lambda_zip" {
 
 resource "aws_lambda_function" "etl_lambda" {
   function_name = "etl-transform-lambda"
-  runtime       = "python3.11"
+  runtime       = "python3.13"
   handler       = "lambda_function.lambda_handler"
   role          = aws_iam_role.lambda_role.arn
 
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
-  layers = ["arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python311:6"]
+  layers = ["arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python313:17"]
 
   environment {
     variables = {
