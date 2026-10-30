@@ -14,6 +14,14 @@ def test_reads_every_column_as_text():
     assert df.dtypes.astype(str).tolist() == ["string", "string", "string"]
 
 
+def test_extra_field_in_first_row_keeps_columns_aligned():
+    with pytest.warns(pd.errors.ParserWarning):  # pandas notes the dropped field
+        df = read("Name,Age,City\nRyan,29,Charlotte,oops\nPalmer,8,Davidson\n")
+
+    assert df["Name"].tolist() == ["Ryan", "Palmer"]
+    assert df["City"].tolist() == ["Charlotte", "Davidson"]
+
+
 def test_increments_age():
     result = transform(read("Name,Age,City\nRyan,29,Charlotte\nPalmer,8,Davidson\n"))
 

@@ -18,8 +18,9 @@ def parse_csv(body):
     if not body.strip():
         return pd.DataFrame()
     # pandas reads an all-blank column as numbers, which would fix that column's
-    # type for the whole table
-    return pd.read_csv(io.BytesIO(body), dtype="string")
+    # type for the whole table. index_col=False stops it from treating an extra
+    # field in the first row as a row index, which shifts every column.
+    return pd.read_csv(io.BytesIO(body), dtype="string", index_col=False)
 
 def transform(df):
     """Trim whitespace and increment Age by 1, leaving blank or invalid ages blank."""
