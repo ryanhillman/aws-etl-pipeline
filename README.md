@@ -17,8 +17,6 @@ The function uses pandas to transform the dataset, writes it as Parquet to a sep
 
 A Glue crawler catalogs the raw data, so AWS Athena can query both datasets with SQL.
 
-Terraform was used to provision resources and AWS CloudWatch verified the transformation logic.
-
 ---
 
 ## [Demo](https://youtu.be/CyTrPDVRbM4)
@@ -27,35 +25,19 @@ Terraform was used to provision resources and AWS CloudWatch verified the transf
 
 ## Architecture Diagram
 
-```text
-         ┌─────────────────────┐
-         │     Raw Data S3     │
-         │  (raw-data-ryan)    │
-         └─────────┬───────────┘
-                   │  (CSV upload event)
-                   ▼
-         ┌─────────────────────┐
-         │  AWS Lambda (ETL)   │
-         │ etl-transform-lambda│
-         └─────────┬───────────┘
-                   │  (pandas transform)
-                   ▼
-         ┌─────────────────────┐
-         │  Cleaned Data S3    │
-         │ (cleaned-data-ryan) │
-         └─────────┬───────────┘
-                   │  (Glue Crawlers)
-                   ▼
-         ┌─────────────────────┐
-         │  AWS Glue Catalog   │
-         │ (etl_data_catalog)  │
-         └─────────┬───────────┘
-                   │  (SQL queries)
-                   ▼
-         ┌─────────────────────┐
-         │   AWS Athena        │
-         │   Query Results     │
-         └─────────────────────┘
+```mermaid
+flowchart TD
+    raw[("Raw S3 bucket<br/>CSV under raw/")]
+    lambda["Lambda<br/>pandas transform"]
+    cleaned[("Cleaned S3 bucket<br/>Parquet")]
+    catalog["Glue Data Catalog<br/>raw + cleaned tables"]
+    athena["Athena<br/>SQL queries"]
+
+    raw -->|upload event| lambda
+    lambda -->|writes| cleaned
+    lambda -->|registers table| catalog
+    raw -->|Glue crawler| catalog
+    catalog --> athena
 ```
 
 ---
@@ -77,15 +59,15 @@ aws s3 cp sample_data/raw_data.csv s3://$(terraform output -raw raw_bucket)/raw/
 ```
 After a few seconds, query the cleaned data in Athena with the `etl-pipeline` workgroup:
 ```sql
-SELECT * FROM etl_pipeline.cleaned;
+SELECT * FROM etl_pipeline.cleaned ORDER BY name;
 ```
 
 **Expected:**
 
 | name | age | city |
 |---|---|---|
-| Ryan | 30 | Charlotte |
 | Palmer | 9 | Davidson |
+| Ryan | 30 | Charlotte |
 
 To compare with the raw data, run the crawler, then query `etl_pipeline.raw`:
 ```sh
@@ -101,6 +83,7 @@ terraform destroy
 
 ## Testing
 
+Requires Python 3.13.
 ```sh
 pip install -r requirements-dev.txt
 pytest
