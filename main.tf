@@ -98,11 +98,6 @@ resource "aws_iam_role_policy" "lambda" {
         ]
       },
       {
-        Effect   = "Allow"
-        Action   = "sqs:SendMessage"
-        Resource = aws_sqs_queue.failures.arn
-      },
-      {
         Effect = "Allow"
         Action = [
           "logs:CreateLogStream",
@@ -143,30 +138,13 @@ resource "aws_lambda_function" "transform" {
   memory_size = 512
   timeout     = 60
 
-  # Logging and permissions must exist before the first invocation, and AWS
-  # rejects the failure destination unless the role can already send to SQS
+  # Logging and permissions must exist before the first invocation
   depends_on = [aws_cloudwatch_log_group.transform, aws_iam_role_policy.lambda]
 }
 
 resource "aws_cloudwatch_log_group" "transform" {
   name              = "/aws/lambda/${local.function_name}"
   retention_in_days = 14
-}
-
-# Events that still fail after S3's two async retries land here instead of being dropped
-resource "aws_sqs_queue" "failures" {
-  name                      = "${var.project}-failures"
-  message_retention_seconds = 1209600 # 14 days, the maximum
-}
-
-resource "aws_lambda_function_event_invoke_config" "transform" {
-  function_name = aws_lambda_function.transform.function_name
-
-  destination_config {
-    on_failure {
-      destination = aws_sqs_queue.failures.arn
-    }
-  }
 }
 
 resource "aws_lambda_permission" "allow_s3_invoke" {

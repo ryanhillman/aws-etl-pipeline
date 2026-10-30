@@ -32,14 +32,12 @@ flowchart TD
     cleaned[("Cleaned S3 bucket<br/>Parquet")]
     catalog["Glue Data Catalog<br/>raw + cleaned tables"]
     athena["Athena<br/>SQL queries"]
-    sqs["SQS<br/>failed events"]
 
     raw -->|upload event| lambda
     lambda -->|writes| cleaned
     lambda -->|registers table| catalog
     raw -->|Glue crawler| catalog
     catalog --> athena
-    lambda -.->|after retries| sqs
 ```
 
 ---
@@ -53,7 +51,7 @@ flowchart TD
 terraform init
 terraform apply
 ```
-Terraform packages the Lambda code and creates the S3 buckets, the Lambda function (using the AWS-managed AWS SDK for pandas layer) and its S3 trigger, the Glue database and raw-data crawler, an Athena workgroup, a log group with 14-day retention, and an SQS queue that captures failed events.
+Terraform packages the Lambda code and creates the S3 buckets, the Lambda function (using the AWS-managed AWS SDK for pandas layer) and its S3 trigger, the Glue database and raw-data crawler, an Athena workgroup, and a log group with 14-day retention.
 
 **2. Test the pipeline**
 ```sh
