@@ -3,6 +3,19 @@ import boto3
 import pandas as pd
 import io
 
+def transform(df):
+    """Trim whitespace and increment Age by 1, leaving blank ages blank."""
+    df = df.copy()
+    df.columns = df.columns.str.strip()
+    for col in df.select_dtypes(include="object").columns:
+        df[col] = df[col].str.strip()
+
+    if "Age" in df.columns:
+        df["Age"] = df["Age"].astype("Int64") + 1
+    else:
+        print("⚠️ 'Age' column not found in dataset!")
+    return df
+
 def lambda_handler(event, context):
     print("✅ Lambda triggered successfully.")
 
@@ -24,10 +37,7 @@ def lambda_handler(event, context):
     print(df)
 
     # --- Simple transformation: increment age by 1 ---
-    if "Age" in df.columns:
-        df["Age"] = df["Age"].astype(int) + 1
-    else:
-        print("⚠️ 'Age' column not found in dataset!")
+    df = transform(df)
 
     # --- Write entire DataFrame to memory as CSV ---
     csv_buffer = io.StringIO()

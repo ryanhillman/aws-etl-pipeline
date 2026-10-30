@@ -96,3 +96,12 @@ Palmer,9,Davidson
 ```powershell
 terraform destroy
 ```
+
+---
+
+## Testing
+
+```powershell
+pip install -r requirements-dev.txt
+pytest
+```
