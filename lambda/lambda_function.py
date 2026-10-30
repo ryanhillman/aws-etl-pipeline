@@ -2,11 +2,13 @@ import io
 import os
 import urllib.parse
 
+import awswrangler as wr
 import boto3
 import pandas as pd
 
 # Set by Terraform
-CLEANED_BUCKET = os.environ["CLEANED_BUCKET"]
+CLEANED_PATH = os.environ["CLEANED_PATH"]
+GLUE_DATABASE = os.environ["GLUE_DATABASE"]
 
 # Created once per container and reused across invocations
 s3_client = boto3.client("s3")
@@ -41,11 +43,14 @@ def process_file(bucket, key):
     # --- Simple transformation: increment age by 1 ---
     df = transform(df)
 
-    # --- Upload to cleaned S3 bucket ---
-    s3_client.put_object(
-        Bucket=CLEANED_BUCKET,
-        Key=f"cleaned/{key}",
-        Body=df.to_csv(index=False)
+    # --- Append to the Parquet dataset and register it as the "cleaned" Glue table ---
+    wr.s3.to_parquet(
+        df=df,
+        path=CLEANED_PATH,
+        dataset=True,
+        mode="append",
+        database=GLUE_DATABASE,
+        table="cleaned"
     )
 
     print(f"✅ Successfully processed and uploaded: {key}")

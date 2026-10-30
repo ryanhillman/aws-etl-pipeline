@@ -13,9 +13,9 @@ This project demonstrates a **serverless ETL pipeline** capable of ingesting, tr
 ## Overview
 When a new CSV file is uploaded to an S3 bucket, an AWS Lambda function is automatically triggered.
 
-The function uses pandas to transform the dataset before saving the processed data to a separate S3 bucket.
+The function uses pandas to transform the dataset, writes it as Parquet to a separate S3 bucket, and registers it in the AWS Glue Data Catalog.
 
-AWS Glue then catalogs the raw and cleaned datasets, allowing SQL querying with AWS Athena.
+A Glue crawler catalogs the raw data, so AWS Athena can query both datasets with SQL.
 
 Terraform was used to provision resources and AWS CloudWatch verified the transformation logic.
 
@@ -75,24 +75,21 @@ Terraform packages the Lambda code and creates the S3 buckets, the Lambda functi
 ```sh
 aws s3 cp sample_data/raw_data.csv s3://$(terraform output -raw raw_bucket)/raw/raw_data.csv
 ```
-After a few seconds, verify the output:
-```sh
-aws s3 cp s3://$(terraform output -raw cleaned_bucket)/cleaned/raw/raw_data.csv -
+After a few seconds, query the cleaned data in Athena with the `etl-pipeline` workgroup:
+```sql
+SELECT * FROM etl_pipeline.cleaned;
 ```
 
 **Expected:**
-```csv
-Name,Age,City
-Ryan,30,Charlotte
-Palmer,9,Davidson
-```
 
-To catalog the raw data, run the crawler, then query it in Athena with the `etl-pipeline` workgroup:
+| name | age | city |
+|---|---|---|
+| Ryan | 30 | Charlotte |
+| Palmer | 9 | Davidson |
+
+To compare with the raw data, run the crawler, then query `etl_pipeline.raw`:
 ```sh
 aws glue start-crawler --name $(terraform output -raw raw_crawler)
-```
-```sql
-SELECT * FROM etl_pipeline.raw;
 ```
 
 **3. Tear down**

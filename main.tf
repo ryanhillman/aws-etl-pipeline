@@ -30,8 +30,11 @@ variable "project" {
 
 data "aws_caller_identity" "current" {}
 
+data "aws_region" "current" {}
+
 locals {
   account_id = data.aws_caller_identity.current.account_id
+  glue_arn   = "arn:aws:glue:${data.aws_region.current.region}:${local.account_id}"
 }
 
 # S3 bucket names are global, so the account ID keeps them unique
@@ -74,6 +77,16 @@ resource "aws_iam_role_policy" "lambda_policy" {
         Resource = "${aws_s3_bucket.cleaned.arn}/cleaned/*"
       },
       {
+        # awswrangler creates the "cleaned" table, and updates it when new columns appear
+        Effect = "Allow"
+        Action = ["glue:GetTable", "glue:CreateTable", "glue:UpdateTable"]
+        Resource = [
+          "${local.glue_arn}:catalog",
+          aws_glue_catalog_database.etl.arn,
+          "${local.glue_arn}:table/${aws_glue_catalog_database.etl.name}/*"
+        ]
+      },
+      {
         Effect   = "Allow"
         Action   = "sqs:SendMessage"
         Resource = aws_sqs_queue.lambda_failures.arn
@@ -110,11 +123,14 @@ resource "aws_lambda_function" "etl_lambda" {
 
   environment {
     variables = {
-      CLEANED_BUCKET = aws_s3_bucket.cleaned.bucket
+      CLEANED_PATH  = "s3://${aws_s3_bucket.cleaned.bucket}/cleaned/"
+      GLUE_DATABASE = aws_glue_catalog_database.etl.name
     }
   }
 
-  timeout = 60
+  # pandas plus awswrangler's pyarrow don't fit comfortably in the 128 MB default
+  memory_size = 512
+  timeout     = 60
 }
 
 resource "aws_cloudwatch_log_group" "lambda" {
@@ -234,9 +250,6 @@ output "raw_bucket" {
   value = aws_s3_bucket.raw.bucket
 }
 
-output "cleaned_bucket" {
-  value = aws_s3_bucket.cleaned.bucket
-}
 
 output "raw_crawler" {
   value = aws_glue_crawler.raw.name
