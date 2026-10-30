@@ -21,12 +21,6 @@ venv/
 pip-wheel-metadata/
 *.zip
 
-# --- AWS Lambda / packaging ---
-python/
-unzipped_lambda/
-verify_zip/
-layer/
-
 # --- OS / IDE junk ---
 .DS_Store
 Thumbs.db
