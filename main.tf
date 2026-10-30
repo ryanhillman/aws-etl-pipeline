@@ -46,7 +46,7 @@ resource "aws_s3_bucket" "cleaned" {
 }
 
 resource "aws_iam_role" "lambda_role" {
-  name = "etl-lambda-role"
+  name = "${var.project}-lambda"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -58,7 +58,7 @@ resource "aws_iam_role" "lambda_role" {
 }
 
 resource "aws_iam_role_policy" "lambda_policy" {
-  name = "etl-lambda-policy"
+  name = "${var.project}-lambda"
   role = aws_iam_role.lambda_role.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -98,7 +98,7 @@ data "archive_file" "lambda_zip" {
 }
 
 resource "aws_lambda_function" "etl_lambda" {
-  function_name = "etl-transform-lambda"
+  function_name = "${var.project}-transform"
   runtime       = "python3.13"
   handler       = "lambda_function.lambda_handler"
   role          = aws_iam_role.lambda_role.arn
@@ -124,7 +124,7 @@ resource "aws_cloudwatch_log_group" "lambda" {
 
 # Events that still fail after S3's two async retries land here instead of being dropped
 resource "aws_sqs_queue" "lambda_failures" {
-  name                      = "etl-lambda-failures"
+  name                      = "${var.project}-failures"
   message_retention_seconds = 1209600 # 14 days, the maximum
 }
 
