@@ -5,7 +5,6 @@
 .terraform.lock.hcl
 *.tfvars
 *.tfvars.json
-crash.log
 override.tf
 override.tf.json
 *_override.tf
@@ -27,9 +26,7 @@ pip-wheel-metadata/
 python/
 unzipped_lambda/
 verify_zip/
-lambda_function.zip
 layer/
-pandas-layer-final.zip
 
 # --- OS / IDE junk ---
 .DS_Store
@@ -45,7 +42,6 @@ Thumbs.db
 *.key
 
 # --- Local data files ---
-raw_data.csv
 *.csv
 
 # --- Other ---

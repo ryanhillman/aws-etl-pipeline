@@ -62,7 +62,7 @@ Terraform was used to provision resources and AWS CloudWatch verified the transf
 
 ## Deployment
 
-**Prerequisites:** AWS CLI configured, Terraform installed, Python 3.11.
+**Prerequisites:** AWS CLI configured, Terraform installed.
 
 **1. Package the Lambda function**
 ```powershell
