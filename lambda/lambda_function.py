@@ -1,4 +1,5 @@
 import json
+import urllib.parse
 import boto3
 import pandas as pd
 import io
@@ -26,12 +27,19 @@ def lambda_handler(event, context):
     source_bucket = "raw-data-ryan"
     cleaned_bucket = "cleaned-data-ryan"
 
-    # Extract uploaded file name from the S3 event
-    key = event["Records"][0]["s3"]["object"]["key"]
+    # Extract uploaded file name from the S3 event (keys arrive URL-encoded)
+    key = urllib.parse.unquote_plus(event["Records"][0]["s3"]["object"]["key"])
 
     # --- Read CSV from the source bucket ---
     response = s3_client.get_object(Bucket=source_bucket, Key=key)
-    df = pd.read_csv(io.BytesIO(response["Body"].read()))
+    body = response["Body"].read()
+
+    # Skip folders created in the console and empty files
+    if key.endswith("/") or not body.strip():
+        print(f"⚠️ Skipping empty file or folder: {key}")
+        return {"statusCode": 200, "body": json.dumps("Skipped empty file.")}
+
+    df = pd.read_csv(io.BytesIO(body))
 
     print("Original data:")
     print(df)
