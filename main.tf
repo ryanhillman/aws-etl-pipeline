@@ -17,6 +17,8 @@ provider "aws" {
   region = "us-east-1"
 }
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_s3_bucket" "raw" {
   bucket        = "raw-data-ryan"
   force_destroy = true
@@ -118,11 +120,12 @@ resource "aws_lambda_function_event_invoke_config" "etl_lambda" {
 }
 
 resource "aws_lambda_permission" "allow_s3_invoke" {
-  statement_id  = "AllowExecutionFromS3"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.etl_lambda.function_name
-  principal     = "s3.amazonaws.com"
-  source_arn    = aws_s3_bucket.raw.arn
+  statement_id   = "AllowExecutionFromS3"
+  action         = "lambda:InvokeFunction"
+  function_name  = aws_lambda_function.etl_lambda.function_name
+  principal      = "s3.amazonaws.com"
+  source_arn     = aws_s3_bucket.raw.arn
+  source_account = data.aws_caller_identity.current.account_id
 }
 
 resource "aws_s3_bucket_notification" "raw_trigger" {
