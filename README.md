@@ -64,24 +64,19 @@ Terraform was used to provision resources and AWS CloudWatch verified the transf
 
 **Prerequisites:** AWS CLI configured, Terraform installed.
 
-**1. Package the Lambda function**
-```powershell
-Compress-Archive -Path lambda/lambda_function.py -DestinationPath lambda/lambda_function.zip -Force
-```
-
-**2. Provision infrastructure**
-```powershell
+**1. Provision infrastructure**
+```sh
 terraform init
 terraform apply
 ```
-Terraform creates both S3 buckets, the IAM role, the Lambda function (using the AWS-managed AWS SDK for pandas layer), and the S3 event trigger. The Glue crawlers, Data Catalog and Athena queries were configured in the AWS console.
+Terraform packages the Lambda code and creates both S3 buckets, the IAM role, the Lambda function (using the AWS-managed AWS SDK for pandas layer), and the S3 event trigger. The Glue crawlers, Data Catalog and Athena queries were configured in the AWS console.
 
-**3. Test the pipeline**
-```powershell
+**2. Test the pipeline**
+```sh
 aws s3 cp sample_data/raw_data.csv s3://raw-data-ryan/raw_data.csv
 ```
 After a few seconds, verify the output:
-```powershell
+```sh
 aws s3 cp s3://cleaned-data-ryan/cleaned/raw_data.csv -
 ```
 
@@ -92,8 +87,8 @@ Ryan,30,Charlotte
 Palmer,9,Davidson
 ```
 
-**4. Tear down**
-```powershell
+**3. Tear down**
+```sh
 terraform destroy
 ```
 
@@ -101,7 +96,7 @@ terraform destroy
 
 ## Testing
 
-```powershell
+```sh
 pip install -r requirements-dev.txt
 pytest
 ```
