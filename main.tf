@@ -112,6 +112,9 @@ resource "aws_lambda_function_event_invoke_config" "etl_lambda" {
       destination = aws_sqs_queue.lambda_failures.arn
     }
   }
+
+  # AWS rejects the destination unless the role can already send to the queue
+  depends_on = [aws_iam_role_policy.lambda_policy]
 }
 
 resource "aws_lambda_permission" "allow_s3_invoke" {
