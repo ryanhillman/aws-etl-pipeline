@@ -22,9 +22,11 @@ variable "project" {
   type        = string
   default     = "etl-pipeline"
 
+  # The longest derived name, "<project>-cleaned-<12-digit account ID>", must fit
+  # S3's 63-character limit
   validation {
-    condition     = can(regex("^[a-z0-9-]+$", var.project))
-    error_message = "Use lowercase letters, numbers and hyphens (S3 bucket naming rules)."
+    condition     = can(regex("^[a-z0-9][a-z0-9-]{0,40}[a-z0-9]$", var.project))
+    error_message = "Use 2-42 lowercase letters, numbers and hyphens, starting and ending with a letter or number."
   }
 }
 
