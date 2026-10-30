@@ -4,6 +4,9 @@ import boto3
 import pandas as pd
 import io
 
+# Created once per container and reused across invocations
+s3_client = boto3.client("s3")
+
 def transform(df):
     """Trim whitespace and increment Age by 1, leaving blank ages blank."""
     df = df.copy()
@@ -19,9 +22,6 @@ def transform(df):
 
 def lambda_handler(event, context):
     print("✅ Lambda triggered successfully.")
-
-    # Initialize S3 client
-    s3_client = boto3.client("s3")
 
     # Buckets
     source_bucket = "raw-data-ryan"

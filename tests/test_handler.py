@@ -22,7 +22,7 @@ class FakeS3:
 
 def run(s3, encoded_key):
     event = {"Records": [{"s3": {"object": {"key": encoded_key}}}]}
-    with mock.patch.object(lambda_function.boto3, "client", return_value=s3):
+    with mock.patch.object(lambda_function, "s3_client", s3):
         return lambda_function.lambda_handler(event, None)
 
 
