@@ -42,3 +42,9 @@ def test_trims_whitespace_in_headers_and_values():
 
     assert list(result.columns) == ["Name", "Age", "City"]
     assert result["City"].tolist() == ["Charlotte"]
+
+
+def test_whitespace_only_cell_becomes_blank():
+    result = transform(read("Name,Age,City\nRyan,29,   \n"))
+
+    assert pd.isna(result["City"].iloc[0])

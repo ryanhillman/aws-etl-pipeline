@@ -24,7 +24,8 @@ def parse_csv(body):
 
 def transform(df):
     """Trim whitespace and increment Age by 1, leaving blank or invalid ages blank."""
-    df = df.rename(columns=str.strip).apply(lambda col: col.str.strip())
+    # Whitespace-only cells become blank, like empty ones
+    df = df.rename(columns=str.strip).apply(lambda col: col.str.strip().replace("", pd.NA))
 
     if "Age" in df.columns:
         age = pd.to_numeric(df["Age"], errors="coerce")
