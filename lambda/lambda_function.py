@@ -15,6 +15,8 @@ s3_client = boto3.client("s3")
 
 def parse_csv(body):
     """Parse CSV bytes with every column as text; transform() types Age."""
+    if not body.strip():
+        return pd.DataFrame()
     # pandas reads an all-blank column as numbers, which would fix that column's
     # type for the whole table
     return pd.read_csv(io.BytesIO(body), dtype="string")
@@ -32,13 +34,12 @@ def transform(df):
 
 def process_file(bucket, key):
     # --- Read CSV from the source bucket ---
-    body = s3_client.get_object(Bucket=bucket, Key=key)["Body"].read()
+    df = parse_csv(s3_client.get_object(Bucket=bucket, Key=key)["Body"].read())
 
-    if not body.strip():
+    # Blank or header-only file: awswrangler can't infer types from an empty table
+    if df.empty:
         print(f"⚠️ Skipping empty file: {key}")
         return
-
-    df = parse_csv(body)
 
     print("Original data:")
     print(df)

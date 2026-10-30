@@ -47,7 +47,8 @@ def test_processes_every_record():
     assert [w["df"]["Age"].tolist() for w in writes] == [[2], [3]]
 
 
-def test_skips_empty_files():
-    writes = run({"empty.csv": b"", "blank.csv": b"\n\n"}, "empty.csv", "blank.csv")
+def test_skips_files_without_data_rows():
+    files = {"empty.csv": b"", "blank.csv": b"\n\n", "header.csv": b"Name,Age\n"}
+    writes = run(files, *files)
 
     assert writes == []
