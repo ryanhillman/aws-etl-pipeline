@@ -87,9 +87,9 @@ aws s3 cp s3://cleaned-data-ryan/cleaned/raw_data.csv -
 
 **Expected:**
 ```csv
-Name,Age,City 
-Ryan,30,Charlotte 
-Palmer,9,Davidson 
+Name,Age,City
+Ryan,30,Charlotte
+Palmer,9,Davidson
 ```
 
 **4. Tear down**
