@@ -1,0 +1,4 @@
+# Test dependencies. In AWS, pandas comes from the Lambda layer and boto3 from the runtime.
+boto3==1.40.61
+pandas==2.2.3
+pytest==8.3.2
