@@ -69,7 +69,7 @@ Terraform was used to provision resources and AWS CloudWatch verified the transf
 terraform init
 terraform apply
 ```
-Terraform packages the Lambda code and creates both S3 buckets, the IAM role, the Lambda function (using the AWS-managed AWS SDK for pandas layer), the S3 event trigger, and an SQS queue that captures failed events. The Glue crawlers, Data Catalog and Athena queries were configured in the AWS console.
+Terraform packages the Lambda code and creates both S3 buckets, the IAM role, the Lambda function (using the AWS-managed AWS SDK for pandas layer), the S3 event trigger, a log group with 14-day retention, and an SQS queue that captures failed events. The Glue crawlers, Data Catalog and Athena queries were configured in the AWS console.
 
 **2. Test the pipeline**
 ```sh
