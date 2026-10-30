@@ -73,11 +73,11 @@ Terraform packages the Lambda code and creates both S3 buckets, the IAM role, th
 
 **2. Test the pipeline**
 ```sh
-aws s3 cp sample_data/raw_data.csv s3://raw-data-ryan/raw_data.csv
+aws s3 cp sample_data/raw_data.csv s3://$(terraform output -raw raw_bucket)/raw_data.csv
 ```
 After a few seconds, verify the output:
 ```sh
-aws s3 cp s3://cleaned-data-ryan/cleaned/raw_data.csv -
+aws s3 cp s3://$(terraform output -raw cleaned_bucket)/cleaned/raw_data.csv -
 ```
 
 **Expected:**

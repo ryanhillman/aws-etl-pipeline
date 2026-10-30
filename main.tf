@@ -17,15 +17,31 @@ provider "aws" {
   region = "us-east-1"
 }
 
+variable "project" {
+  description = "Prefix for all resource names"
+  type        = string
+  default     = "etl-pipeline"
+
+  validation {
+    condition     = can(regex("^[a-z0-9-]+$", var.project))
+    error_message = "Use lowercase letters, numbers and hyphens (S3 bucket naming rules)."
+  }
+}
+
 data "aws_caller_identity" "current" {}
 
+locals {
+  account_id = data.aws_caller_identity.current.account_id
+}
+
+# S3 bucket names are global, so the account ID keeps them unique
 resource "aws_s3_bucket" "raw" {
-  bucket        = "raw-data-ryan"
+  bucket        = "${var.project}-raw-${local.account_id}"
   force_destroy = true
 }
 
 resource "aws_s3_bucket" "cleaned" {
-  bucket        = "cleaned-data-ryan"
+  bucket        = "${var.project}-cleaned-${local.account_id}"
   force_destroy = true
 }
 
@@ -131,7 +147,7 @@ resource "aws_lambda_permission" "allow_s3_invoke" {
   function_name  = aws_lambda_function.etl_lambda.function_name
   principal      = "s3.amazonaws.com"
   source_arn     = aws_s3_bucket.raw.arn
-  source_account = data.aws_caller_identity.current.account_id
+  source_account = local.account_id
 }
 
 resource "aws_s3_bucket_notification" "raw_trigger" {
@@ -144,4 +160,12 @@ resource "aws_s3_bucket_notification" "raw_trigger" {
   }
 
   depends_on = [aws_lambda_permission.allow_s3_invoke]
+}
+
+output "raw_bucket" {
+  value = aws_s3_bucket.raw.bucket
+}
+
+output "cleaned_bucket" {
+  value = aws_s3_bucket.cleaned.bucket
 }
