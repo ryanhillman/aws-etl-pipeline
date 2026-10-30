@@ -9,17 +9,13 @@ class FakeS3:
 
     def __init__(self, objects):
         self.objects = objects  # {(bucket, key): body}
-        self.uploads = {}  # {key: body}
 
     def get_object(self, Bucket, Key):
         return {"Body": io.BytesIO(self.objects[(Bucket, Key)])}
 
-    def put_object(self, Bucket, Key, Body):
-        self.uploads[Key] = Body
-
 
 def run(objects, *encoded_keys):
-    """Invoke the handler with one S3 record per key, as S3 would send it."""
+    """Invoke the handler with one S3 record per key; return the to_parquet calls."""
     s3 = FakeS3({("test-raw", key): body for key, body in objects.items()})
     event = {
         "Records": [
@@ -27,25 +23,41 @@ def run(objects, *encoded_keys):
             for key in encoded_keys
         ]
     }
-    with mock.patch.object(lambda_function, "s3_client", s3):
+    with (
+        mock.patch.object(lambda_function, "s3_client", s3),
+        mock.patch.object(lambda_function.wr.s3, "to_parquet") as to_parquet,
+    ):
         lambda_function.lambda_handler(event, None)
-    return s3.uploads
+    return [call.kwargs for call in to_parquet.call_args_list]
 
 
 def test_reads_bucket_from_event_and_decodes_key():
-    uploads = run({"my data.csv": b"Name,Age\nRyan,29\n"}, "my+data.csv")
+    writes = run(
+        {"raw/my data.csv": b"Name,Age,City\nRyan,29,Charlotte\n"}, "raw/my+data.csv"
+    )
 
-    assert uploads["cleaned/my data.csv"].splitlines() == ["name,age", "Ryan,30"]
+    assert len(writes) == 1
+    write = writes[0]
+    assert write["df"].to_dict("records") == [
+        {"name": "Ryan", "age": 30, "city": "Charlotte"}
+    ]
+    assert (write["path"], write["database"], write["table"]) == (
+        "s3://test-cleaned/cleaned/",
+        "test_db",
+        "cleaned",
+    )
+    assert (write["dataset"], write["mode"]) == (True, "append")
 
 
 def test_processes_every_record():
-    uploads = run({"a.csv": b"Age\n1\n", "b.csv": b"Age\n2\n"}, "a.csv", "b.csv")
+    files = {"a.csv": b"Name,Age,City\nA,1,X\n", "b.csv": b"Name,Age,City\nB,2,Y\n"}
+    writes = run(files, *files)
 
-    assert set(uploads) == {"cleaned/a.csv", "cleaned/b.csv"}
+    assert [w["df"]["age"].tolist() for w in writes] == [[2], [3]]
 
 
 def test_skips_files_without_data_rows():
     files = {"empty.csv": b"", "blank.csv": b"\n\n", "header.csv": b"Name,Age\n"}
-    uploads = run(files, *files)
+    writes = run(files, *files)
 
-    assert uploads == {}
+    assert writes == []
