@@ -69,7 +69,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
       {
         Effect   = "Allow"
         Action   = "s3:GetObject"
-        Resource = "${aws_s3_bucket.raw.arn}/*"
+        Resource = "${aws_s3_bucket.raw.arn}/raw/*"
       },
       {
         Effect   = "Allow"
