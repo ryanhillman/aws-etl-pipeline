@@ -46,7 +46,7 @@ def process_file(bucket, key):
     # Log the shape, not the rows, so file contents don't end up in CloudWatch
     print(f"Read {len(df)} rows with columns {list(df.columns)}")
 
-    # --- Simple transformation: increment age by 1 ---
+    # --- Transform: trim whitespace and increment age by 1 ---
     df = transform(df)
 
     # --- Append to the Parquet dataset and register it as the "cleaned" Glue table ---
