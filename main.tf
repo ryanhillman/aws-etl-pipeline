@@ -41,6 +41,11 @@ resource "aws_iam_role_policy" "lambda_policy" {
         Resource = "${aws_s3_bucket.cleaned.arn}/cleaned/*"
       },
       {
+        Effect   = "Allow"
+        Action   = "sqs:SendMessage"
+        Resource = aws_sqs_queue.lambda_failures.arn
+      },
+      {
         Effect = "Allow"
         Action = [
           "logs:CreateLogGroup",
@@ -65,6 +70,22 @@ resource "aws_lambda_function" "etl_lambda" {
   layers = ["arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python311:6"]
 
   timeout = 60
+}
+
+# Events that still fail after S3's two async retries land here instead of being dropped
+resource "aws_sqs_queue" "lambda_failures" {
+  name                      = "etl-lambda-failures"
+  message_retention_seconds = 1209600 # 14 days, the maximum
+}
+
+resource "aws_lambda_function_event_invoke_config" "etl_lambda" {
+  function_name = aws_lambda_function.etl_lambda.function_name
+
+  destination_config {
+    on_failure {
+      destination = aws_sqs_queue.lambda_failures.arn
+    }
+  }
 }
 
 resource "aws_lambda_permission" "allow_s3_invoke" {

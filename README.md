@@ -74,7 +74,7 @@ Compress-Archive -Path lambda/lambda_function.py -DestinationPath lambda/lambda_
 terraform init
 terraform apply
 ```
-Terraform creates both S3 buckets, the IAM role, the Lambda function (using the AWS-managed AWS SDK for pandas layer), and the S3 event trigger. The Glue crawlers, Data Catalog and Athena queries were configured in the AWS console.
+Terraform creates both S3 buckets, the IAM role, the Lambda function (using the AWS-managed AWS SDK for pandas layer), the S3 event trigger, and an SQS queue that captures failed events. The Glue crawlers, Data Catalog and Athena queries were configured in the AWS console.
 
 **3. Test the pipeline**
 ```powershell
