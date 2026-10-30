@@ -81,11 +81,10 @@ resource "aws_iam_role_policy" "lambda" {
       {
         Effect = "Allow"
         Action = [
-          "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Resource = "*"
+        Resource = "${aws_cloudwatch_log_group.transform.arn}:*"
       }
     ]
   })
@@ -116,14 +115,23 @@ resource "aws_lambda_function" "transform" {
   }
 
   timeout = 60
+
+  # Logging and permissions must exist before the first invocation
+  depends_on = [aws_cloudwatch_log_group.transform, aws_iam_role_policy.lambda]
+}
+
+resource "aws_cloudwatch_log_group" "transform" {
+  name              = "/aws/lambda/${local.function_name}"
+  retention_in_days = 14
 }
 
 resource "aws_lambda_permission" "allow_s3_invoke" {
-  statement_id  = "AllowExecutionFromS3"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.transform.function_name
-  principal     = "s3.amazonaws.com"
-  source_arn    = aws_s3_bucket.raw.arn
+  statement_id   = "AllowExecutionFromS3"
+  action         = "lambda:InvokeFunction"
+  function_name  = aws_lambda_function.transform.function_name
+  principal      = "s3.amazonaws.com"
+  source_arn     = aws_s3_bucket.raw.arn
+  source_account = local.account_id
 }
 
 resource "aws_s3_bucket_notification" "raw_trigger" {
