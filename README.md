@@ -104,4 +104,5 @@ terraform destroy
 ```sh
 pip install -r requirements-dev.txt
 pytest
+ruff format --check . && ruff check .
 ```

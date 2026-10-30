@@ -20,6 +20,8 @@ jobs:
 
       - run: pip install -r requirements-dev.txt
 
+      - run: ruff format --check . && ruff check .
+
       - run: pytest -v
 
   terraform:
