@@ -64,12 +64,12 @@ SELECT * FROM etl_pipeline.cleaned;
 
 **Expected:**
 
-| name | age | city | source_file |
-|---|---|---|---|
-| Ryan | 30 | Charlotte | raw_data.csv |
-| Palmer | 9 | Davidson | raw_data.csv |
+| name | age | city |
+|---|---|---|
+| Ryan | 30 | Charlotte |
+| Palmer | 9 | Davidson |
 
-Each file is its own partition, so uploading it again replaces its rows instead of duplicating them.
+Uploading the same file again appends its rows a second time.
 
 To compare with the raw data, run the crawler, then query `etl_pipeline.raw`:
 ```sh

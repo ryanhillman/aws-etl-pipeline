@@ -43,17 +43,12 @@ def process_file(bucket, key):
     # --- Simple transformation: increment age by 1 ---
     df = transform(df)
 
-    # --- Write the file's rows as its own partition of the "cleaned" Glue table ---
-    # Overwriting the partition means reprocessing a file (re-upload, duplicate
-    # event, retry) replaces its rows instead of duplicating them. "/" would break
-    # the partition path, so raw/a/b.csv becomes a__b.csv.
-    df["source_file"] = key.removeprefix("raw/").replace("/", "__")
+    # --- Append to the Parquet dataset and register it as the "cleaned" Glue table ---
     wr.s3.to_parquet(
         df=df,
         path=CLEANED_PATH,
         dataset=True,
-        mode="overwrite_partitions",
-        partition_cols=["source_file"],
+        mode="append",
         database=GLUE_DATABASE,
         table="cleaned"
     )
