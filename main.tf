@@ -63,11 +63,10 @@ resource "aws_iam_role_policy" "lambda_policy" {
       {
         Effect = "Allow"
         Action = [
-          "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Resource = "*"
+        Resource = "${aws_cloudwatch_log_group.lambda.arn}:*"
       }
     ]
   })
@@ -92,6 +91,11 @@ resource "aws_lambda_function" "etl_lambda" {
   layers = ["arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python311:6"]
 
   timeout = 60
+}
+
+resource "aws_cloudwatch_log_group" "lambda" {
+  name              = "/aws/lambda/${aws_lambda_function.etl_lambda.function_name}"
+  retention_in_days = 14
 }
 
 # Events that still fail after S3's two async retries land here instead of being dropped
