@@ -34,11 +34,17 @@ def test_reads_bucket_from_event_and_decodes_key():
 
     assert len(writes) == 1
     write = writes[0]
-    assert write["df"].to_dict("records") == [{"Name": "Ryan", "Age": 30}]
+    assert write["df"].to_dict("records") == [{"Name": "Ryan", "Age": 30, "source_file": "my data.csv"}]
     assert (write["path"], write["database"], write["table"]) == (
         "s3://test-cleaned/cleaned/", "test_db", "cleaned"
     )
-    assert (write["dataset"], write["mode"]) == (True, "append")
+    assert (write["mode"], write["partition_cols"]) == ("overwrite_partitions", ["source_file"])
+
+
+def test_flattens_nested_keys_into_partition_value():
+    writes = run({"raw/2026/more.csv": b"Age\n1\n"}, "raw/2026/more.csv")
+
+    assert writes[0]["df"]["source_file"].tolist() == ["2026__more.csv"]
 
 
 def test_processes_every_record():

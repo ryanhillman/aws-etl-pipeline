@@ -73,14 +73,22 @@ resource "aws_iam_role_policy" "lambda" {
         Resource = "${aws_s3_bucket.raw.arn}/raw/*"
       },
       {
+        # Overwriting a partition deletes its old files before writing new ones
         Effect   = "Allow"
-        Action   = "s3:PutObject"
+        Action   = ["s3:PutObject", "s3:DeleteObject"]
         Resource = "${aws_s3_bucket.cleaned.arn}/cleaned/*"
       },
       {
-        # awswrangler creates the "cleaned" table, and updates it when new columns appear
+        Effect    = "Allow"
+        Action    = "s3:ListBucket"
+        Resource  = aws_s3_bucket.cleaned.arn
+        Condition = { StringLike = { "s3:prefix" = "cleaned/*" } }
+      },
+      {
+        # awswrangler creates the "cleaned" table and its partitions, and updates
+        # the table when new columns appear
         Effect = "Allow"
-        Action = ["glue:GetTable", "glue:CreateTable", "glue:UpdateTable"]
+        Action = ["glue:GetTable", "glue:CreateTable", "glue:UpdateTable", "glue:BatchCreatePartition"]
         Resource = [
           "${local.glue_arn}:catalog",
           aws_glue_catalog_database.etl.arn,
