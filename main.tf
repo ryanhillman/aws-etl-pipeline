@@ -119,7 +119,7 @@ resource "aws_lambda_function" "etl_lambda" {
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
-  layers = ["arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python313:17"]
+  layers = ["arn:aws:lambda:${data.aws_region.current.region}:336392948345:layer:AWSSDKPandas-Python313:17"]
 
   environment {
     variables = {
