@@ -44,7 +44,7 @@ def test_processes_every_record():
     assert set(uploads) == {"cleaned/a.csv", "cleaned/b.csv"}
 
 
-def test_skips_empty_files_and_folders():
-    uploads = run({"empty.csv": b"", "folder/": b""}, "empty.csv", "folder/")
+def test_skips_empty_files():
+    uploads = run({"empty.csv": b"", "blank.csv": b"\n\n"}, "empty.csv", "blank.csv")
 
     assert uploads == {}

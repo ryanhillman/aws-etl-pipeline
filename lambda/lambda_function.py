@@ -1,8 +1,8 @@
-import json
+import io
 import urllib.parse
+
 import boto3
 import pandas as pd
-import io
 
 CLEANED_BUCKET = "cleaned-data-ryan"
 
@@ -27,9 +27,8 @@ def process_file(bucket, key):
     # --- Read CSV from the source bucket ---
     body = s3_client.get_object(Bucket=bucket, Key=key)["Body"].read()
 
-    # Skip folders created in the console and empty files
-    if key.endswith("/") or not body.strip():
-        print(f"⚠️ Skipping empty file or folder: {key}")
+    if not body.strip():
+        print(f"⚠️ Skipping empty file: {key}")
         return
 
     df = pd.read_csv(io.BytesIO(body))
@@ -40,15 +39,11 @@ def process_file(bucket, key):
     # --- Simple transformation: increment age by 1 ---
     df = transform(df)
 
-    # --- Write entire DataFrame to memory as CSV ---
-    csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
-
     # --- Upload to cleaned S3 bucket ---
     s3_client.put_object(
         Bucket=CLEANED_BUCKET,
         Key=f"cleaned/{key}",
-        Body=csv_buffer.getvalue()
+        Body=df.to_csv(index=False)
     )
 
     print(f"✅ Successfully processed and uploaded: {key}")
@@ -62,5 +57,3 @@ def lambda_handler(event, context):
             record["s3"]["bucket"]["name"],
             urllib.parse.unquote_plus(record["s3"]["object"]["key"])
         )
-
-    return {"statusCode": 200, "body": json.dumps("Processing complete.")}
