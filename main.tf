@@ -156,10 +156,64 @@ resource "aws_s3_bucket_notification" "raw_trigger" {
   lambda_function {
     lambda_function_arn = aws_lambda_function.etl_lambda.arn
     events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "raw/"
     filter_suffix       = ".csv"
   }
 
   depends_on = [aws_lambda_permission.allow_s3_invoke]
+}
+
+# Athena database and table names can't contain hyphens
+resource "aws_glue_catalog_database" "etl" {
+  name = replace(var.project, "-", "_")
+}
+
+resource "aws_iam_role" "glue_crawler" {
+  name = "${var.project}-glue-crawler"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "glue.amazonaws.com" }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "glue_crawler_service" {
+  role       = aws_iam_role.glue_crawler.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+}
+
+resource "aws_iam_role_policy" "glue_crawler_s3" {
+  name = "${var.project}-glue-crawler-s3"
+  role = aws_iam_role.glue_crawler.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "s3:ListBucket"
+        Resource = aws_s3_bucket.raw.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.raw.arn}/raw/*"
+      }
+    ]
+  })
+}
+
+# Catalogs the raw CSVs as the "raw" table (named after the raw/ prefix)
+resource "aws_glue_crawler" "raw" {
+  name          = "${var.project}-raw"
+  database_name = aws_glue_catalog_database.etl.name
+  role          = aws_iam_role.glue_crawler.arn
+
+  s3_target {
+    path = "s3://${aws_s3_bucket.raw.bucket}/raw/"
+  }
 }
 
 output "raw_bucket" {
@@ -168,4 +222,8 @@ output "raw_bucket" {
 
 output "cleaned_bucket" {
   value = aws_s3_bucket.cleaned.bucket
+}
+
+output "raw_crawler" {
+  value = aws_glue_crawler.raw.name
 }

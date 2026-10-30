@@ -69,15 +69,15 @@ Terraform was used to provision resources and AWS CloudWatch verified the transf
 terraform init
 terraform apply
 ```
-Terraform packages the Lambda code and creates both S3 buckets, the IAM role, the Lambda function (using the AWS-managed AWS SDK for pandas layer), the S3 event trigger, a log group with 14-day retention, and an SQS queue that captures failed events. The Glue crawlers, Data Catalog and Athena queries were configured in the AWS console.
+Terraform packages the Lambda code and creates the S3 buckets, the Lambda function (using the AWS-managed AWS SDK for pandas layer) and its S3 trigger, the Glue database and raw-data crawler, a log group with 14-day retention, and an SQS queue that captures failed events. Athena queries were configured in the AWS console.
 
 **2. Test the pipeline**
 ```sh
-aws s3 cp sample_data/raw_data.csv s3://$(terraform output -raw raw_bucket)/raw_data.csv
+aws s3 cp sample_data/raw_data.csv s3://$(terraform output -raw raw_bucket)/raw/raw_data.csv
 ```
 After a few seconds, verify the output:
 ```sh
-aws s3 cp s3://$(terraform output -raw cleaned_bucket)/cleaned/raw_data.csv -
+aws s3 cp s3://$(terraform output -raw cleaned_bucket)/cleaned/raw/raw_data.csv -
 ```
 
 **Expected:**
@@ -85,6 +85,11 @@ aws s3 cp s3://$(terraform output -raw cleaned_bucket)/cleaned/raw_data.csv -
 Name,Age,City
 Ryan,30,Charlotte
 Palmer,9,Davidson
+```
+
+To catalog the raw data for Athena, run the crawler:
+```sh
+aws glue start-crawler --name $(terraform output -raw raw_crawler)
 ```
 
 **3. Tear down**
