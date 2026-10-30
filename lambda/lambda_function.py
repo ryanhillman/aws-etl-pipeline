@@ -4,6 +4,8 @@ import boto3
 import pandas as pd
 import io
 
+CLEANED_BUCKET = "cleaned-data-ryan"
+
 # Created once per container and reused across invocations
 s3_client = boto3.client("s3")
 
@@ -20,24 +22,14 @@ def transform(df):
         print("⚠️ 'Age' column not found in dataset!")
     return df
 
-def lambda_handler(event, context):
-    print("✅ Lambda triggered successfully.")
-
-    # Buckets
-    source_bucket = "raw-data-ryan"
-    cleaned_bucket = "cleaned-data-ryan"
-
-    # Extract uploaded file name from the S3 event (keys arrive URL-encoded)
-    key = urllib.parse.unquote_plus(event["Records"][0]["s3"]["object"]["key"])
-
+def process_file(bucket, key):
     # --- Read CSV from the source bucket ---
-    response = s3_client.get_object(Bucket=source_bucket, Key=key)
-    body = response["Body"].read()
+    body = s3_client.get_object(Bucket=bucket, Key=key)["Body"].read()
 
     # Skip folders created in the console and empty files
     if key.endswith("/") or not body.strip():
         print(f"⚠️ Skipping empty file or folder: {key}")
-        return {"statusCode": 200, "body": json.dumps("Skipped empty file.")}
+        return
 
     df = pd.read_csv(io.BytesIO(body))
 
@@ -53,10 +45,21 @@ def lambda_handler(event, context):
 
     # --- Upload to cleaned S3 bucket ---
     s3_client.put_object(
-        Bucket=cleaned_bucket,
+        Bucket=CLEANED_BUCKET,
         Key=f"cleaned/{key}",
         Body=csv_buffer.getvalue()
     )
 
     print(f"✅ Successfully processed and uploaded: {key}")
+
+def lambda_handler(event, context):
+    print("✅ Lambda triggered successfully.")
+
+    for record in event["Records"]:
+        # Object keys arrive URL-encoded (e.g. spaces as "+")
+        process_file(
+            record["s3"]["bucket"]["name"],
+            urllib.parse.unquote_plus(record["s3"]["object"]["key"])
+        )
+
     return {"statusCode": 200, "body": json.dumps("Processing complete.")}
