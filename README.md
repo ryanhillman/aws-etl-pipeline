@@ -27,35 +27,21 @@ Terraform was used to provision resources and AWS CloudWatch verified the transf
 
 ## Architecture Diagram
 
-```text
-         ┌─────────────────────┐
-         │     Raw Data S3     │
-         │  (raw-data-ryan)    │
-         └─────────┬───────────┘
-                   │  (CSV upload event)
-                   ▼
-         ┌─────────────────────┐
-         │  AWS Lambda (ETL)   │
-         │ etl-transform-lambda│
-         └─────────┬───────────┘
-                   │  (pandas transform)
-                   ▼
-         ┌─────────────────────┐
-         │  Cleaned Data S3    │
-         │ (cleaned-data-ryan) │
-         └─────────┬───────────┘
-                   │  (Glue Crawlers)
-                   ▼
-         ┌─────────────────────┐
-         │  AWS Glue Catalog   │
-         │ (etl_data_catalog)  │
-         └─────────┬───────────┘
-                   │  (SQL queries)
-                   ▼
-         ┌─────────────────────┐
-         │   AWS Athena        │
-         │   Query Results     │
-         └─────────────────────┘
+```mermaid
+flowchart TD
+    raw[("Raw S3 bucket<br/>CSV under raw/")]
+    lambda["Lambda<br/>pandas transform"]
+    cleaned[("Cleaned S3 bucket<br/>Parquet")]
+    catalog["Glue Data Catalog<br/>raw + cleaned tables"]
+    athena["Athena<br/>SQL queries"]
+    sqs["SQS<br/>failed events"]
+
+    raw -->|upload event| lambda
+    lambda -->|writes| cleaned
+    lambda -->|registers table| catalog
+    raw -->|Glue crawler| catalog
+    catalog --> athena
+    lambda -.->|after retries| sqs
 ```
 
 ---
