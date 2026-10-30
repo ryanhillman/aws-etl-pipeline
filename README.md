@@ -59,15 +59,15 @@ aws s3 cp sample_data/raw_data.csv s3://$(terraform output -raw raw_bucket)/raw/
 ```
 After a few seconds, query the cleaned data in Athena with the `etl-pipeline` workgroup:
 ```sql
-SELECT * FROM etl_pipeline.cleaned;
+SELECT * FROM etl_pipeline.cleaned ORDER BY name;
 ```
 
 **Expected:**
 
 | name | age | city |
 |---|---|---|
-| Ryan | 30 | Charlotte |
 | Palmer | 9 | Davidson |
+| Ryan | 30 | Charlotte |
 
 Uploading the same file again appends its rows a second time.
 
@@ -85,6 +85,7 @@ terraform destroy
 
 ## Testing
 
+Requires Python 3.13.
 ```sh
 pip install -r requirements-dev.txt
 pytest
