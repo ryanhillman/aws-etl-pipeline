@@ -17,8 +17,6 @@ The function uses pandas to transform the dataset, writes it as Parquet to a sep
 
 A Glue crawler catalogs the raw data, so AWS Athena can query both datasets with SQL.
 
-Terraform was used to provision resources and AWS CloudWatch verified the transformation logic.
-
 ---
 
 ## [Demo](https://youtu.be/CyTrPDVRbM4)
