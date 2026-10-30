@@ -49,7 +49,7 @@ resource "aws_s3_bucket" "cleaned" {
   force_destroy = true
 }
 
-resource "aws_iam_role" "lambda_role" {
+resource "aws_iam_role" "lambda" {
   name = "${var.project}-lambda"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -61,9 +61,9 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
-resource "aws_iam_role_policy" "lambda_policy" {
+resource "aws_iam_role_policy" "lambda" {
   name = "${var.project}-lambda"
-  role = aws_iam_role.lambda_role.id
+  role = aws_iam_role.lambda.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -90,7 +90,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
       {
         Effect   = "Allow"
         Action   = "sqs:SendMessage"
-        Resource = aws_sqs_queue.lambda_failures.arn
+        Resource = aws_sqs_queue.failures.arn
       },
       {
         Effect = "Allow"
@@ -98,27 +98,27 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Resource = "${aws_cloudwatch_log_group.lambda.arn}:*"
+        Resource = "${aws_cloudwatch_log_group.transform.arn}:*"
       }
     ]
   })
 }
 
-data "archive_file" "lambda_zip" {
+data "archive_file" "transform" {
   type             = "zip"
   source_file      = "${path.module}/lambda/lambda_function.py"
   output_path      = "${path.module}/build/lambda_function.zip"
   output_file_mode = "0666" # consistent file permissions across operating systems
 }
 
-resource "aws_lambda_function" "etl_lambda" {
+resource "aws_lambda_function" "transform" {
   function_name = local.function_name
   runtime       = "python3.13"
   handler       = "lambda_function.lambda_handler"
-  role          = aws_iam_role.lambda_role.arn
+  role          = aws_iam_role.lambda.arn
 
-  filename         = data.archive_file.lambda_zip.output_path
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  filename         = data.archive_file.transform.output_path
+  source_code_hash = data.archive_file.transform.output_base64sha256
 
   layers = ["arn:aws:lambda:${data.aws_region.current.region}:336392948345:layer:AWSSDKPandas-Python313:17"]
 
@@ -135,26 +135,26 @@ resource "aws_lambda_function" "etl_lambda" {
 
   # Logging and permissions must exist before the first invocation, and AWS
   # rejects the failure destination unless the role can already send to SQS
-  depends_on = [aws_cloudwatch_log_group.lambda, aws_iam_role_policy.lambda_policy]
+  depends_on = [aws_cloudwatch_log_group.transform, aws_iam_role_policy.lambda]
 }
 
-resource "aws_cloudwatch_log_group" "lambda" {
+resource "aws_cloudwatch_log_group" "transform" {
   name              = "/aws/lambda/${local.function_name}"
   retention_in_days = 14
 }
 
 # Events that still fail after S3's two async retries land here instead of being dropped
-resource "aws_sqs_queue" "lambda_failures" {
+resource "aws_sqs_queue" "failures" {
   name                      = "${var.project}-failures"
   message_retention_seconds = 1209600 # 14 days, the maximum
 }
 
-resource "aws_lambda_function_event_invoke_config" "etl_lambda" {
-  function_name = aws_lambda_function.etl_lambda.function_name
+resource "aws_lambda_function_event_invoke_config" "transform" {
+  function_name = aws_lambda_function.transform.function_name
 
   destination_config {
     on_failure {
-      destination = aws_sqs_queue.lambda_failures.arn
+      destination = aws_sqs_queue.failures.arn
     }
   }
 }
@@ -162,7 +162,7 @@ resource "aws_lambda_function_event_invoke_config" "etl_lambda" {
 resource "aws_lambda_permission" "allow_s3_invoke" {
   statement_id   = "AllowExecutionFromS3"
   action         = "lambda:InvokeFunction"
-  function_name  = aws_lambda_function.etl_lambda.function_name
+  function_name  = aws_lambda_function.transform.function_name
   principal      = "s3.amazonaws.com"
   source_arn     = aws_s3_bucket.raw.arn
   source_account = local.account_id
@@ -172,7 +172,7 @@ resource "aws_s3_bucket_notification" "raw_trigger" {
   bucket = aws_s3_bucket.raw.id
 
   lambda_function {
-    lambda_function_arn = aws_lambda_function.etl_lambda.arn
+    lambda_function_arn = aws_lambda_function.transform.arn
     events              = ["s3:ObjectCreated:*"]
     filter_prefix       = "raw/"
     filter_suffix       = ".csv"
@@ -198,13 +198,13 @@ resource "aws_iam_role" "glue_crawler" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "glue_crawler_service" {
+resource "aws_iam_role_policy_attachment" "glue_crawler" {
   role       = aws_iam_role.glue_crawler.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
 }
 
-resource "aws_iam_role_policy" "glue_crawler_s3" {
-  name = "${var.project}-glue-crawler-s3"
+resource "aws_iam_role_policy" "glue_crawler" {
+  name = "${var.project}-glue-crawler"
   role = aws_iam_role.glue_crawler.id
   policy = jsonencode({
     Version = "2012-10-17"
