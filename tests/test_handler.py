@@ -9,13 +9,13 @@ class FakeS3:
 
     def __init__(self, objects):
         self.objects = objects  # {(bucket, key): body}
-        self.uploads = {}  # {key: body}
+        self.uploads = {}  # {(bucket, key): body}
 
     def get_object(self, Bucket, Key):
         return {"Body": io.BytesIO(self.objects[(Bucket, Key)])}
 
     def put_object(self, Bucket, Key, Body):
-        self.uploads[Key] = Body
+        self.uploads[(Bucket, Key)] = Body
 
 
 def run(objects, *encoded_keys):
@@ -35,13 +35,14 @@ def run(objects, *encoded_keys):
 def test_reads_bucket_from_event_and_decodes_key():
     uploads = run({"my data.csv": b"Name,Age\nRyan,29\n"}, "my+data.csv")
 
-    assert uploads["cleaned/my data.csv"].splitlines() == ["Name,Age", "Ryan,30"]
+    body = uploads[("test-cleaned", "cleaned/my data.csv")]
+    assert body.splitlines() == ["Name,Age", "Ryan,30"]
 
 
 def test_processes_every_record():
     uploads = run({"a.csv": b"Age\n1\n", "b.csv": b"Age\n2\n"}, "a.csv", "b.csv")
 
-    assert set(uploads) == {"cleaned/a.csv", "cleaned/b.csv"}
+    assert set(uploads) == {("test-cleaned", "cleaned/a.csv"), ("test-cleaned", "cleaned/b.csv")}
 
 
 def test_skips_empty_files():

@@ -1,10 +1,12 @@
 import io
+import os
 import urllib.parse
 
 import boto3
 import pandas as pd
 
-CLEANED_BUCKET = "cleaned-data-ryan"
+# Set by Terraform
+CLEANED_BUCKET = os.environ["CLEANED_BUCKET"]
 
 # Created once per container and reused across invocations
 s3_client = boto3.client("s3")
