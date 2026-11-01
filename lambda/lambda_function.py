@@ -25,17 +25,18 @@ def parse_csv(body):
 
 
 def transform(df):
-    """Trim whitespace and increment Age by 1, leaving blank or invalid ages blank."""
-    # Whitespace-only cells become blank, like empty ones
-    df = df.rename(columns=str.strip).apply(
+    """Trim whitespace and increment age by 1, leaving blank or invalid ages blank."""
+    # Lowercase headers so "Age", "age" and "AGE" all match; Glue lowercases column
+    # names anyway. Whitespace-only cells become blank, like empty ones.
+    df = df.rename(columns=lambda c: c.strip().lower()).apply(
         lambda col: col.str.strip().replace("", pd.NA)
     )
 
-    if "Age" in df.columns:
-        age = pd.to_numeric(df["Age"], errors="coerce")
-        df["Age"] = age.where(age % 1 == 0).astype("Int64") + 1
+    if "age" in df.columns:
+        age = pd.to_numeric(df["age"], errors="coerce")
+        df["age"] = age.where(age % 1 == 0).astype("Int64") + 1
     else:
-        print("⚠️ 'Age' column not found in dataset!")
+        print("⚠️ 'age' column not found in dataset!")
     return df
 
 

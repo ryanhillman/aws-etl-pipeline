@@ -36,7 +36,7 @@ def test_reads_bucket_from_event_and_decodes_key():
 
     assert len(writes) == 1
     write = writes[0]
-    assert write["df"].to_dict("records") == [{"Name": "Ryan", "Age": 30}]
+    assert write["df"].to_dict("records") == [{"name": "Ryan", "age": 30}]
     assert (write["path"], write["database"], write["table"]) == (
         "s3://test-cleaned/cleaned/",
         "test_db",
@@ -48,7 +48,7 @@ def test_reads_bucket_from_event_and_decodes_key():
 def test_processes_every_record():
     writes = run({"a.csv": b"Age\n1\n", "b.csv": b"Age\n2\n"}, "a.csv", "b.csv")
 
-    assert [w["df"]["Age"].tolist() for w in writes] == [[2], [3]]
+    assert [w["df"]["age"].tolist() for w in writes] == [[2], [3]]
 
 
 def test_skips_files_without_data_rows():
