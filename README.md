@@ -64,10 +64,10 @@ SELECT * FROM etl_pipeline.cleaned ORDER BY name;
 
 **Expected:**
 
-| name | age | city |
-|---|---|---|
-| Palmer | 9 | Davidson |
-| Ryan | 30 | Charlotte |
+| name | age | city | source_file |
+|---|---|---|---|
+| Palmer | 9 | Davidson | raw_data.csv |
+| Ryan | 30 | Charlotte | raw_data.csv |
 
 To compare with the raw data, run the crawler, then query `etl_pipeline.raw`:
 ```sh

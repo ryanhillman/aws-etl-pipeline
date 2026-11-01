@@ -11,7 +11,8 @@ CLEANED_PATH = os.environ["CLEANED_PATH"]
 GLUE_DATABASE = os.environ["GLUE_DATABASE"]
 
 # Target schema of the "cleaned" table: files need these columns (in any order or
-# capitalization), and any others are dropped
+# capitalization), and any others are dropped. The table is also partitioned by
+# source_file.
 COLUMNS = ["name", "age", "city"]
 
 # Created once per container and reused across invocations
@@ -68,12 +69,17 @@ def process_file(bucket, key):
     # --- Transform: trim whitespace and increment age by 1 ---
     df = transform(df)
 
-    # --- Append to the Parquet dataset and register it as the "cleaned" Glue table ---
+    # --- Write the file's rows as its own partition of the "cleaned" Glue table ---
+    # Overwriting the partition makes reprocessing (a re-upload, a duplicate S3
+    # event or a retry) replace the file's rows instead of duplicating them. "/"
+    # would break the partition path, so raw/a/b.csv becomes a__b.csv.
+    df["source_file"] = key.removeprefix("raw/").replace("/", "__")
     wr.s3.to_parquet(
         df=df,
         path=CLEANED_PATH,
         dataset=True,
-        mode="append",
+        mode="overwrite_partitions",
+        partition_cols=["source_file"],
         database=GLUE_DATABASE,
         table="cleaned",
     )
