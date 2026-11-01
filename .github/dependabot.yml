@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      dev-tools:
+        patterns: ["*"]
+    # Pinned to match the Lambda: awswrangler and pandas come from the AWS SDK for
+    # pandas layer and boto3 from the runtime, so tests must use the same versions
+    ignore:
+      - dependency-name: awswrangler
+      - dependency-name: pandas
+      - dependency-name: boto3
+
+  - package-ecosystem: terraform
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      providers:
+        patterns: ["*"]
