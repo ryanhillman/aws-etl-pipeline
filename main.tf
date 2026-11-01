@@ -80,9 +80,10 @@ resource "aws_iam_role_policy" "lambda" {
         Resource = "${aws_s3_bucket.cleaned.arn}/cleaned/*"
       },
       {
-        # awswrangler creates the "cleaned" table, and updates it when new columns appear
+        # awswrangler creates the "cleaned" table on the first write; its columns
+        # are fixed, so it never needs updating
         Effect = "Allow"
-        Action = ["glue:GetTable", "glue:CreateTable", "glue:UpdateTable"]
+        Action = ["glue:GetTable", "glue:CreateTable"]
         Resource = [
           "${local.glue_arn}:catalog",
           aws_glue_catalog_database.etl.arn,

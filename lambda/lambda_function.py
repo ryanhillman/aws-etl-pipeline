@@ -10,12 +10,16 @@ import pandas as pd
 CLEANED_PATH = os.environ["CLEANED_PATH"]
 GLUE_DATABASE = os.environ["GLUE_DATABASE"]
 
+# Target schema of the "cleaned" table: files need these columns (in any order or
+# capitalization), and any others are dropped
+COLUMNS = ["name", "age", "city"]
+
 # Created once per container and reused across invocations
 s3_client = boto3.client("s3")
 
 
 def parse_csv(body):
-    """Parse CSV bytes with every column as text; transform() types Age."""
+    """Parse CSV bytes with every column as text; transform() types age."""
     if not body.strip():
         return pd.DataFrame()
     # pandas reads an all-blank column as numbers, which would fix that column's
@@ -25,18 +29,27 @@ def parse_csv(body):
 
 
 def transform(df):
-    """Trim whitespace and increment age by 1, leaving blank or invalid ages blank."""
+    """Fit the target schema, trim whitespace and increment age by 1.
+
+    Blank or invalid ages stay blank.
+    """
     # Lowercase headers so "Age", "age" and "AGE" all match; Glue lowercases column
-    # names anyway. Whitespace-only cells become blank, like empty ones.
-    df = df.rename(columns=lambda c: c.strip().lower()).apply(
-        lambda col: col.str.strip().replace("", pd.NA)
+    # names anyway
+    df = df.rename(columns=lambda c: c.strip().lower())
+    missing = sorted(set(COLUMNS) - set(df.columns))
+    if missing:
+        raise ValueError(f"Missing required columns: {missing}")
+
+    # Whitespace-only cells become blank, like empty ones, and all-blank rows (such
+    # as a line of commas) are dropped
+    df = (
+        df[COLUMNS]
+        .apply(lambda col: col.str.strip().replace("", pd.NA))
+        .dropna(how="all")
     )
 
-    if "age" in df.columns:
-        age = pd.to_numeric(df["age"], errors="coerce")
-        df["age"] = age.where(age % 1 == 0).astype("Int64") + 1
-    else:
-        print("⚠️ 'age' column not found in dataset!")
+    age = pd.to_numeric(df["age"], errors="coerce")
+    df["age"] = age.where(age % 1 == 0).astype("Int64") + 1
     return df
 
 

@@ -11,7 +11,7 @@ This project demonstrates a **serverless ETL pipeline** capable of ingesting, tr
 ---
 
 ## Overview
-When a new CSV file is uploaded to an S3 bucket, an AWS Lambda function is automatically triggered.
+When a new CSV file is uploaded to an S3 bucket, an AWS Lambda function is automatically triggered. Files need `name`, `age` and `city` columns (in any capitalization); other columns are dropped.
 
 The function uses pandas to transform the dataset, writes it as Parquet to a separate S3 bucket, and registers it in the AWS Glue Data Catalog.
 

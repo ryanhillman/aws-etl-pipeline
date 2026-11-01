@@ -54,6 +54,24 @@ def test_whitespace_only_cell_becomes_blank():
 
 @pytest.mark.parametrize("header", ["Age", "age", "AGE", " Age "])
 def test_matches_age_header_in_any_case(header):
-    result = transform(read(f"Name,{header}\nRyan,29\n"))
+    result = transform(read(f"Name,{header},City\nRyan,29,Charlotte\n"))
 
     assert result["age"].tolist() == [30]
+
+
+def test_missing_required_column_raises():
+    with pytest.raises(ValueError, match="city"):
+        transform(read("Name,Age\nRyan,29\n"))
+
+
+def test_drops_columns_outside_the_schema():
+    # The trailing comma would otherwise add an "unnamed_3" column to the table
+    result = transform(read("Email,Name,Age,City,\na@b.c,Ryan,29,Charlotte,\n"))
+
+    assert list(result.columns) == ["name", "age", "city"]
+
+
+def test_drops_all_blank_rows():
+    result = transform(read("Name,Age,City\nRyan,29,Charlotte\n,,\n"))
+
+    assert result["name"].tolist() == ["Ryan"]
