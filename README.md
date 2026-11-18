@@ -8,8 +8,6 @@
 
 This project demonstrates a **serverless ETL pipeline** capable of ingesting, transforming, cataloging, and querying structured data.
 
----
-
 ## Overview
 When a new CSV file is uploaded to an S3 bucket, an AWS Lambda function is automatically triggered. Files need `name`, `age` and `city` columns (in any capitalization); other columns are dropped.
 
@@ -17,11 +15,7 @@ The function uses pandas to transform the dataset, writes it as Parquet to a sep
 
 A Glue crawler catalogs the raw data, so AWS Athena can query both datasets with SQL.
 
----
-
 ## [Demo](https://youtu.be/CyTrPDVRbM4)
-
----
 
 ## Architecture Diagram
 
@@ -39,8 +33,6 @@ flowchart TD
     raw -->|Glue crawler| catalog
     catalog --> athena
 ```
-
----
 
 ## Deployment
 
@@ -78,8 +70,6 @@ aws glue start-crawler --name $(terraform output -raw raw_crawler)
 ```sh
 terraform destroy
 ```
-
----
 
 ## Testing
 
